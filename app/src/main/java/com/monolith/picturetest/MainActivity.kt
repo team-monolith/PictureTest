@@ -10,22 +10,27 @@ import android.widget.ImageView
 import android.widget.Toast
 import java.io.File
 import java.io.FileOutputStream
+import com.github.kittinunf.fuel.httpPost
+import com.github.kittinunf.result.Result
+import java.io.FileNotFoundException
 
 class MainActivity : AppCompatActivity() {
 
-    var image: Bitmap?=null
+    var image: Bitmap? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        var pictureButton : Button = findViewById(R.id.btnLoad)
+        var pictureButton: Button = findViewById(R.id.btnLoad)
 
-        var clearButton:Button=findViewById(R.id.btnClear)
+        var clearButton: Button = findViewById(R.id.btnClear)
 
-        var convertButton:Button=findViewById(R.id.btnConvert)
+        var convertButton: Button = findViewById(R.id.btnConvert)
 
-        var reconvertButton:Button=findViewById(R.id.btnReconvert)
+        var reconvertButton: Button = findViewById(R.id.btnReconvert)
+
+        var connectButton: Button = findViewById(R.id.btnConnect)
 
         //ボタンが押されたらギャラリーを開く
         pictureButton.setOnClickListener {
@@ -36,16 +41,20 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(intent, READ_REQUEST_CODE)
         }
 
-        clearButton.setOnClickListener{
+        clearButton.setOnClickListener {
             ImageClear()
         }
 
-        convertButton.setOnClickListener{
+        convertButton.setOnClickListener {
             Convert()
         }
 
-        reconvertButton.setOnClickListener{
+        reconvertButton.setOnClickListener {
             ReConvert()
+        }
+
+        connectButton.setOnClickListener {
+            Connect()
         }
 
     }
@@ -66,7 +75,12 @@ class MainActivity : AppCompatActivity() {
                 try {
                     resultData?.data?.also { uri ->
                         val inputStream = contentResolver?.openInputStream(uri)
-                        image = BitmapFactory.decodeStream(inputStream)
+                        image = Bitmap.createScaledBitmap(
+                            BitmapFactory.decodeStream(inputStream),
+                            250,
+                            250,
+                            true
+                        )
                         val imageView = findViewById<ImageView>(R.id.imageView)
                         imageView.setImageBitmap(image)
                     }
@@ -78,28 +92,54 @@ class MainActivity : AppCompatActivity() {
     }
 
     //画面上の画像データを削除
-    fun ImageClear(){
-        val imageView=findViewById<ImageView>(R.id.imageView)
+    fun ImageClear() {
+        val imageView = findViewById<ImageView>(R.id.imageView)
         imageView.setImageIcon(null)
     }
 
     //画面上の画像を保存しtxtデータに変換
-    fun Convert(){
-        val file = File("$filesDir","pictureBuffer.png")
-        FileOutputStream(file).use{ fileOutputStream ->
-            image!!.compress(Bitmap.CompressFormat.PNG,80,fileOutputStream)
+    fun Convert() {
+        val file = File("$filesDir", "pictureBuffer.png")
+        FileOutputStream(file).use { fileOutputStream ->
+            image!!.compress(Bitmap.CompressFormat.PNG, 50, fileOutputStream)
             fileOutputStream.flush()
         }
-        val newFile=File("$filesDir","pictureBuffer.txt")
+        val newFile = File("$filesDir", "pictureBuffer.txt")
         file.renameTo(newFile)
     }
 
     //保存されたtxtデータをpngに変換し画面に表示
-    fun ReConvert(){
-        val file=File("$filesDir","pictureBuffer.txt")
-        val newFile = File("$filesDir","pictureBuffer.png")
+    fun ReConvert() {
+        val file = File("$filesDir", "pictureBuffer.txt")
+        val newFile = File("$filesDir", "pictureBuffer.png")
         file.renameTo(newFile)
-        val buf:Bitmap=BitmapFactory.decodeFile("$filesDir/pictureBuffer.png")
+        val buf: Bitmap = BitmapFactory.decodeFile("$filesDir/pictureBuffer.png")
         findViewById<ImageView>(R.id.imageView).setImageBitmap(buf)
+    }
+
+    fun setStringImage(data: String) {
+        FileWrite(data)
+    }
+
+    fun Connect() {
+        val POSTDATA = HashMap<String, String>()
+        POSTDATA.put("", "")
+
+        "https://compass-user.work/s.php".httpPost(POSTDATA.toList())
+            .response { _, response, result ->
+                when (result) {
+                    is Result.Success -> {
+                        setStringImage(String(response.data))
+                    }
+                    is Result.Failure -> {
+                    }
+                }
+            }
+    }
+
+    fun FileWrite(str: String) {
+        var strbuf=str.replace("<br />","")
+        val file = File("$filesDir/", "pictureBuffer.txt")
+        file.writeText(strbuf)
     }
 }
