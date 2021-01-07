@@ -3,16 +3,16 @@ package com.monolith.picturetest
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Base64
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
-import java.io.File
-import java.io.FileOutputStream
+import androidx.appcompat.app.AppCompatActivity
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.result.Result
-import java.io.FileNotFoundException
+import java.io.ByteArrayOutputStream
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -98,14 +98,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     //画面上の画像を保存しtxtデータに変換
-    fun Convert() {
-        val file = File("$filesDir", "pictureBuffer.png")
+    fun Convert(){
+        /*val file = File("$filesDir", "pictureBuffer.png")
         FileOutputStream(file).use { fileOutputStream ->
             image!!.compress(Bitmap.CompressFormat.PNG, 50, fileOutputStream)
             fileOutputStream.flush()
         }
         val newFile = File("$filesDir", "pictureBuffer.txt")
-        file.renameTo(newFile)
+        file.renameTo(newFile)*/
+
+        val baos = ByteArrayOutputStream()
+        image!!.compress(Bitmap.CompressFormat.PNG, 100, baos)
+        val b = baos.toByteArray()
+        FileWrite(Base64.encodeToString(b, Base64.NO_WRAP))
     }
 
     //保存されたtxtデータをpngに変換し画面に表示
@@ -118,7 +123,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun setStringImage(data: String) {
-        FileWrite(data)
+        val decodedByte: ByteArray = Base64.decode(data, 0)
+        val buf= BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.size)
+        findViewById<ImageView>(R.id.imageView).setImageBitmap(buf)
     }
 
     fun Connect() {
