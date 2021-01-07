@@ -77,11 +77,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //画面上の画像データを削除
     fun ImageClear(){
         val imageView=findViewById<ImageView>(R.id.imageView)
         imageView.setImageIcon(null)
     }
 
+    //画面上の画像を保存しtxtデータに変換
     fun Convert(){
         val file = File("$filesDir","pictureBuffer.png")
         FileOutputStream(file).use{ fileOutputStream ->
@@ -92,6 +94,7 @@ class MainActivity : AppCompatActivity() {
         file.renameTo(newFile)
     }
 
+    //保存されたtxtデータをpngに変換し画面に表示
     fun ReConvert(){
         val file=File("$filesDir","pictureBuffer.txt")
         val newFile = File("$filesDir","pictureBuffer.png")
