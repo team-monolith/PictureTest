@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.os.Handler
 import android.util.Base64
 import android.widget.Button
 import android.widget.ImageView
@@ -119,7 +120,9 @@ class MainActivity : AppCompatActivity() {
         val newFile = File("$filesDir", "pictureBuffer.png")
         file.renameTo(newFile)
         val buf: Bitmap = BitmapFactory.decodeFile("$filesDir/pictureBuffer.png")
-        findViewById<ImageView>(R.id.imageView).setImageBitmap(buf)
+        Handler().post {
+            findViewById<ImageView>(R.id.imageView).setImageBitmap(buf)
+        }
     }
 
     fun setStringImage(data: String) {
